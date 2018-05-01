@@ -10,6 +10,7 @@ import Foundation
 import CoreLocation
 
 struct UDAccount : Codable {
+    let key: String?
     
 }
 
@@ -28,7 +29,7 @@ struct LoginResponse : Codable{
 
 class DataBroker {
     
-    func login(forUser user:User, completionHandler: @escaping (_ success:Bool, _ error: String?) -> Void) {
+    func login(forUser user:LoginInfo, completionHandler: @escaping (_ success:Bool, _ error: String?, _ account: UDAccount?) -> Void) {
         
         let loginString = "{\"udacity\": {\"username\": \"\(user.username)\", \"password\": \"\(user.password)\"}}"
         
@@ -38,10 +39,11 @@ class DataBroker {
         request.addValue("application/json", forHTTPHeaderField: "Accept")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = loginString.data(using: .utf8)
+        request.timeoutInterval = 10
         let session = URLSession.shared
         let task = session.dataTask(with: request) { data, response, error in
             if error != nil {
-                completionHandler(false, error?.localizedDescription)
+                completionHandler(false, error?.localizedDescription, nil)
                 return
             }
             let range = Range(5..<data!.count)
@@ -50,15 +52,15 @@ class DataBroker {
                 let decoder = JSONDecoder()
                 do {
                     let ourResponse = try decoder.decode(LoginResponse.self, from: newData)
-                    if let responseError = ourResponse.error {
-                        completionHandler(false, responseError.description)
-                    } else {
-                        completionHandler(true, nil)
+                    guard ourResponse.error == nil else {
+                        completionHandler(false, "Invalid Credentials", nil)
+                        return
                     }
-                    print("What")
+                        completionHandler(true, nil, ourResponse.account)
+  
+                   
                 } catch {
-                    print("error trying to convert data to JSON")
-                    print(error)
+                   fatalError("error trying to convert data to JSON")
                     
                 }
             }
@@ -66,30 +68,88 @@ class DataBroker {
         task.resume()
     }
     
+    func logout(completionHandler: @escaping (_ success:Bool, _ error: String?) -> Void) {
+        var request = URLRequest(url: URL(string: "https://www.udacity.com/api/session")!)
+        request.httpMethod = "DELETE"
+        var xsrfCookie: HTTPCookie? = nil
+        let sharedCookieStorage = HTTPCookieStorage.shared
+        for cookie in sharedCookieStorage.cookies! {
+            if cookie.name == "XSRF-TOKEN" { xsrfCookie = cookie }
+        }
+        if let xsrfCookie = xsrfCookie {
+            request.setValue(xsrfCookie.value, forHTTPHeaderField: "X-XSRF-TOKEN")
+        }
+        let session = URLSession.shared
+        let task = session.dataTask(with: request) { data, response, error in
+            if error != nil {
+                completionHandler(false, error?.localizedDescription)
+                return
+            }
+            
+            completionHandler(true, nil)
+           
+        }
+        task.resume()
+    }
+    
+    func getUserInfo(usingID key: String, completionHandler: @escaping (_ success:Bool, _ error: String?, _ info: UserInfo?) -> Void) {
+        var request = URLRequest(url: URL(string: "https://www.udacity.com/api/users/\(key)")!)
+         request.timeoutInterval = 10
+        let session = URLSession.shared
+        let task = session.dataTask(with: request) { data, response, error in
+            if error != nil { // Handle error...
+                completionHandler(false, error?.localizedDescription, nil)
+            }
+          
+           
+            
+            let range = Range(5..<data!.count)
+            if let newData = data?.subdata(in: range) {
+                 print(String(data: newData, encoding: .utf8)!)
+            
+                let decoder = JSONDecoder()
+                do {
+                    let ourResponse = try decoder.decode(User.self, from: newData)
+                    completionHandler(true, nil, ourResponse.user)
+                } catch {
+                    fatalError("error trying to convert data to JSON")
+                }
+            }
+            
+        }
+        task.resume()
+    }
+    
     func fetchPins(completionHandler: @escaping (_ pins:Array<StudentLocation>?, _ error: String?    ) -> Void)  {
-        var request = URLRequest(url: URL(string: "https://parse.udacity.com/parse/classes/StudentLocation")!)
+        var request = URLRequest(url: URL(string: "https://parse.udacity.com/parse/classes/StudentLocation?order=-updatedAt")!)
         request.addValue("QrX47CA9cyuGewLdsL7o5Eb8iug6Em8ye0dnAbIr", forHTTPHeaderField: "X-Parse-Application-Id")
         request.addValue("QuWThTdiRmTux3YaDseUSEpUKo7aBYM737yKd4gY", forHTTPHeaderField: "X-Parse-REST-API-Key")
+        request.timeoutInterval = 10
         let session = URLSession.shared
         let task = session.dataTask(with: request) { data, response, error in
             if error != nil {
                 completionHandler(nil, error?.localizedDescription)
                 return
             }
-            
-            var parsedResult: AnyObject! = nil
             do {
-                parsedResult = try JSONSerialization.jsonObject(with: data!, options: JSONSerialization.ReadingOptions.allowFragments) as AnyObject
-                let results = RequestResult.init(results: parsedResult["results"] as! [AnyObject])
+               let parsedResult = try JSONSerialization.jsonObject(with: data!, options: JSONSerialization.ReadingOptions.allowFragments) as AnyObject
+                 print(String(data: data!, encoding: .utf8)!)
+                
+               guard parsedResult
+                .value(forKey: "results") != nil else {
+                    completionHandler(nil, "There was an error processing the result.")
+                    return
+                }
+                
+                let resultJSON = parsedResult["results"]
+                let results = RequestResult.init(results: resultJSON as! [AnyObject])
                 var locations:Array<StudentLocation> = Array()
                 for dict in results.results {
-                    
                     let pin = StudentLocation.init(fromJson: dict as! Dictionary<String, Any>)
                     locations.append(pin)
                     
                 }
                 completionHandler(locations, nil)
-                
             } catch {
                 completionHandler(nil, "There was an error processing the result.")
             }
@@ -128,7 +188,7 @@ class DataBroker {
                 completionHandler(true, nil)
                 
             } catch {
-            //    completionHandler(nil, "There was an error processing the result.")
+                completionHandler(false, "There was an error processing the result.")
             }
             
         }

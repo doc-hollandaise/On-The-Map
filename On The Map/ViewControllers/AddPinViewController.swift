@@ -14,14 +14,24 @@ class AddPinViewController : ViewController {
     
     @IBOutlet weak var findButton: UIButton!
     
+    @IBOutlet weak var cancelButton: UIButton!
+    
     @IBOutlet weak var locationTextField: UITextField!
     
+    @IBAction func dismiss(_ sender: Any) {
+        if let vc = self.navigationController?.presentingViewController {
+            vc.dismiss(animated: true, completion: nil)
+        }
+    }
     @IBAction func getGeoCode(_ sender: Any) {
+        startSpinner()
         let coder = CLGeocoder()
         coder.geocodeAddressString(locationTextField.text!, completionHandler: { marks, error in
             
             var pin: CLLocation?
             guard error == nil else {
+                self.stopSpinner()
+                self.alertUser(withMessage: "Geocoding failed!")
                 print(error?.localizedDescription ?? "")
                 return
             }
@@ -30,6 +40,7 @@ class AddPinViewController : ViewController {
                 let coord = loc.coordinate
                 pin = CLLocation(latitude: coord.latitude, longitude: coord.longitude)
                 performUIUpdatesOnMain {
+                    self.stopSpinner()
                     let vc = self.storyboard?.instantiateViewController(withIdentifier: "ConfirmPinVC") as! ConfirmPinViewController
                   vc.pin = pin
                   vc.pinString = self.locationTextField.text!

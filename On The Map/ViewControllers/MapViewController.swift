@@ -12,8 +12,7 @@ import MapKit
 class MapViewController : ViewController, MKMapViewDelegate {
     
     @IBOutlet weak var mapView: MKMapView!
-     var locations: Array<StudentLocation>?
-    var appDelegate: AppDelegate?
+    var appDelegate: AppDelegate!
     @IBOutlet weak var addButton: UIBarButtonItem!
     @IBOutlet weak var refreshButton: UIBarButtonItem!
     
@@ -29,20 +28,39 @@ class MapViewController : ViewController, MKMapViewDelegate {
             
             let broker = DataBroker()
             broker.fetchPins(completionHandler: {(pins, error) in
+                
+                
+                if let err = error {
+                    self.alertUser(withMessage: err)
+                    return
+                }
+                
                 performUIUpdatesOnMain {
                     let appDelegate = UIApplication.shared.delegate as! AppDelegate
                     appDelegate.pins = pins
-                    self.locations = appDelegate.pins
                     self.updateMap()
                 }
             })
+    }
+    @IBAction func logOut(_ sender: Any) {
+      startSpinner()
+        let broker = DataBroker()
+        broker.logout(completionHandler: {success, error in
+             performUIUpdatesOnMain {
+                self.stopSpinner()
+                if success {
+                    self.navigationController?.popViewController(animated: true)
+                } else {
+                    self.alertUser(withMessage: error ?? "Unknown Error")
+                }
+            }
+        })
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         appDelegate = UIApplication.shared.delegate as? AppDelegate
-        locations = appDelegate?.pins
         updateMap()
         
     }
@@ -54,7 +72,7 @@ class MapViewController : ViewController, MKMapViewDelegate {
     }
     
     func updateMap() {
-        if let newLocations = locations {
+        if let newLocations = appDelegate.pins {
             let pins = getAnnotations(fromLocations: newLocations)
             self.mapView.addAnnotations(pins)
         }
@@ -63,18 +81,20 @@ class MapViewController : ViewController, MKMapViewDelegate {
     func getAnnotations(fromLocations: Array<StudentLocation>) -> [MKPointAnnotation] {
         
         var annotations = [MKPointAnnotation]()
-        for location in locations! {
-            if let latitude = location.latitude, let longitude = location.longitude, let first = location.firstName, let last = location.lastName, let mediaURL = location.mediaURL {
-                let lat = CLLocationDegrees(latitude)
-                let long = CLLocationDegrees(longitude)
-                
-                let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: long)
-                let annotation = MKPointAnnotation()
-                annotation.coordinate = coordinate
-                annotation.title = "\(first) \(last)"
-                annotation.subtitle = mediaURL
-                
-                annotations.append(annotation)
+        if let locations = appDelegate.pins {
+            for location in locations {
+                if let latitude = location.latitude, let longitude = location.longitude, let first = location.firstName, let last = location.lastName, let mediaURL = location.mediaURL {
+                    let lat = CLLocationDegrees(latitude)
+                    let long = CLLocationDegrees(longitude)
+                    
+                    let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: long)
+                    let annotation = MKPointAnnotation()
+                    annotation.coordinate = coordinate
+                    annotation.title = "\(first) \(last)"
+                    annotation.subtitle = mediaURL
+                    
+                    annotations.append(annotation)
+                }
             }
         }
         return annotations
