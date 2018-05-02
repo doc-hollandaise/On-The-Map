@@ -47,8 +47,8 @@ class LoginViewController : ViewController {
         
         startSpinner()
         
-    //   let user = LoginInfo(username: self.userNameTextField.text!, password: self.passwordTextField.text!)
-         let user = LoginInfo(username: "patryn0@gmail.com", password: "war45036")
+         let user = LoginInfo(username: self.userNameTextField.text!, password: self.passwordTextField.text!)
+       
         
         let broker = DataBroker()
         broker.login(forUser: user, completionHandler: { (success, error, account) in
@@ -82,17 +82,17 @@ class LoginViewController : ViewController {
         broker.fetchPins(completionHandler: {(pins, error) in
             
             if let err = error {
+                self.stopSpinner()
                 self.alertUser(withMessage: err)
                 return
             }
             
             performUIUpdatesOnMain {
-                self.stopSpinner()
-                let appDelegate = UIApplication.shared.delegate as! AppDelegate
-                appDelegate.pins = pins
+                self.stopSpinner()             
+                DataModel.sharedInstance.pins = pins
                 
                 if let tabBar = self.storyboard?.instantiateViewController(withIdentifier: "TabBar"), let nc = self.navigationController {
-                    nc.pushViewController(tabBar, animated: true)
+                  nc.present(tabBar, animated: true, completion: nil)
                 } else {
                     fatalError("Missing key storyboard elements")                    
                 }

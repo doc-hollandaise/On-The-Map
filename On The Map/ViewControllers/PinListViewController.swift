@@ -10,29 +10,71 @@ import UIKit
 import MapKit
 
 
-class PinListViewController : UITableViewController {
+class PinListViewController : ViewController, UITableViewDelegate, UITableViewDataSource {
     
     @IBOutlet var pinTableView: UITableView!
-    var appDelegate: AppDelegate!
+    @IBOutlet weak var logoutButton: UIBarButtonItem!
+    @IBOutlet weak var addButton: UIBarButtonItem!
+    @IBOutlet weak var refreshButton: UIBarButtonItem!
     
-     
+    
+    @IBAction func logout(_ sender: Any) {
+        startSpinner()
+        let broker = DataBroker()
+        broker.logout(completionHandler: {success, error in
+            performUIUpdatesOnMain {
+                self.stopSpinner()
+                if success {
+                    self.navigationController?.dismiss(animated: true, completion: nil)
+                } else {
+                    self.alertUser(withMessage: error ?? "Unknown Error")
+                }
+            }
+        })
+    }
+    
+    @IBAction func addPin(_ sender: Any) {
+        if let nc = self.storyboard?.instantiateViewController(withIdentifier: "AddPinNC") {
+            self.present(nc, animated: true, completion: nil)
+        }
+    }
+    
+    @IBAction func refresh(_ sender: Any) {
+        startSpinner()
+        let broker = DataBroker()
+        broker.fetchPins(completionHandler: {(pins, error) in
+            
+            
+            if let err = error {
+                self.stopSpinner()
+                self.alertUser(withMessage: err)
+                return
+            }
+            
+            performUIUpdatesOnMain {
+                 self.stopSpinner()
+                DataModel.sharedInstance.pins = pins
+                self.pinTableView.reloadData()
+            }
+        })
+        
+    }
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        appDelegate = UIApplication.shared.delegate as? AppDelegate
-       
  
-    }
-    
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
-        return appDelegate.pins!.count
+        self.activityView.activityIndicatorViewStyle = .gray
         
     }
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
+        return DataModel.sharedInstance.pins!.count
+        
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "pinCell") as! UITableViewCell
-        if let pins = appDelegate.pins {
+        if let pins = DataModel.sharedInstance.pins {
             let pin = pins[indexPath.row]
             if let first = pin.firstName, let last = pin.lastName, let url = pin.mediaURL {
                 cell.textLabel?.text = "\(first) \(last)"
@@ -41,9 +83,9 @@ class PinListViewController : UITableViewController {
         return cell
     }
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        if let pins = appDelegate.pins {
+        if let pins = DataModel.sharedInstance.pins {
             let pin = pins[indexPath.row]
             let app = UIApplication.shared
             if let pinURL = pin.mediaURL {

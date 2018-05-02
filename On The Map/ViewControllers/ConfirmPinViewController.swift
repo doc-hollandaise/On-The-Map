@@ -29,6 +29,8 @@ class ConfirmPinViewController : ViewController, MKMapViewDelegate {
                 self.stopSpinner()
                 if success {
                     self.returnToMap()
+                } else {
+                    self.alertUser(withMessage: "There was a problem posting your pin.")
                 }
                 
             })
@@ -40,6 +42,8 @@ class ConfirmPinViewController : ViewController, MKMapViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        self.activityView.activityIndicatorViewStyle = .gray
         
         appDelegate = UIApplication.shared.delegate  as? AppDelegate
         

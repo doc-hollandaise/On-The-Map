@@ -20,6 +20,7 @@
 		7F258F0C2062CA9300A1B6ED /* StudentLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F258F0B2062CA9300A1B6ED /* StudentLocation.swift */; };
 		7F258F0F2062CB1C00A1B6ED /* RequestResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F258F0E2062CB1C00A1B6ED /* RequestResult.swift */; };
 		7F2D92AC206C33070044F8DE /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F2D92AB206C33070044F8DE /* MapViewController.swift */; };
+		7F2E836F209A006E00C041FC /* DataModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F2E836E209A006E00C041FC /* DataModel.swift */; };
 		7F472DED20867886000E86A4 /* GCDBlackBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F472DEC20867886000E86A4 /* GCDBlackBox.swift */; };
 		7FB68FFD2090FF15008A07AA /* AddPinViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FB68FFC2090FF15008A07AA /* AddPinViewController.swift */; };
 		7FB6900120910CC8008A07AA /* ConfirmPinViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FB6900020910CC8008A07AA /* ConfirmPinViewController.swift */; };
@@ -54,6 +55,7 @@
 		7F258F0B2062CA9300A1B6ED /* StudentLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudentLocation.swift; sourceTree = "<group>"; };
 		7F258F0E2062CB1C00A1B6ED /* RequestResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestResult.swift; sourceTree = "<group>"; };
 		7F2D92AB206C33070044F8DE /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
+		7F2E836E209A006E00C041FC /* DataModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataModel.swift; sourceTree = "<group>"; };
 		7F472DEC20867886000E86A4 /* GCDBlackBox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GCDBlackBox.swift; sourceTree = "<group>"; };
 		7FB68FFC2090FF15008A07AA /* AddPinViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddPinViewController.swift; sourceTree = "<group>"; };
 		7FB6900020910CC8008A07AA /* ConfirmPinViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmPinViewController.swift; sourceTree = "<group>"; };
@@ -126,6 +128,7 @@
 		7F258F0D2062CB0800A1B6ED /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				7F2E836E209A006E00C041FC /* DataModel.swift */,
 				7F258F0B2062CA9300A1B6ED /* StudentLocation.swift */,
 				7F258F0E2062CB1C00A1B6ED /* RequestResult.swift */,
 			);
@@ -262,6 +265,7 @@
 				7FB68FFD2090FF15008A07AA /* AddPinViewController.swift in Sources */,
 				7F258F0F2062CB1C00A1B6ED /* RequestResult.swift in Sources */,
 				7FB6900120910CC8008A07AA /* ConfirmPinViewController.swift in Sources */,
+				7F2E836F209A006E00C041FC /* DataModel.swift in Sources */,
 				7F258F0C2062CA9300A1B6ED /* StudentLocation.swift in Sources */,
 				7F258F082061E7EA00A1B6ED /* LoginViewController.swift in Sources */,
 				7F258EE82061E33100A1B6ED /* ViewController.swift in Sources */,

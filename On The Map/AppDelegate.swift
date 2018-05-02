@@ -11,8 +11,7 @@ import UIKit
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    var window: UIWindow?
-    var pins : Array<StudentLocation>?
+    var window: UIWindow?   
     var memberInfo : UserInfo?
 
 

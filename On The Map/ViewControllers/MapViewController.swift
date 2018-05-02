@@ -12,7 +12,6 @@ import MapKit
 class MapViewController : ViewController, MKMapViewDelegate {
     
     @IBOutlet weak var mapView: MKMapView!
-    var appDelegate: AppDelegate!
     @IBOutlet weak var addButton: UIBarButtonItem!
     @IBOutlet weak var refreshButton: UIBarButtonItem!
     
@@ -36,8 +35,7 @@ class MapViewController : ViewController, MKMapViewDelegate {
                 }
                 
                 performUIUpdatesOnMain {
-                    let appDelegate = UIApplication.shared.delegate as! AppDelegate
-                    appDelegate.pins = pins
+                    DataModel.sharedInstance.pins = pins
                     self.updateMap()
                 }
             })
@@ -49,7 +47,7 @@ class MapViewController : ViewController, MKMapViewDelegate {
              performUIUpdatesOnMain {
                 self.stopSpinner()
                 if success {
-                    self.navigationController?.popViewController(animated: true)
+                    self.dismiss(animated: true, completion: nil)
                 } else {
                     self.alertUser(withMessage: error ?? "Unknown Error")
                 }
@@ -60,7 +58,6 @@ class MapViewController : ViewController, MKMapViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        appDelegate = UIApplication.shared.delegate as? AppDelegate
         updateMap()
         
     }
@@ -72,7 +69,7 @@ class MapViewController : ViewController, MKMapViewDelegate {
     }
     
     func updateMap() {
-        if let newLocations = appDelegate.pins {
+        if let newLocations = DataModel.sharedInstance.pins {
             let pins = getAnnotations(fromLocations: newLocations)
             self.mapView.addAnnotations(pins)
         }
@@ -81,7 +78,7 @@ class MapViewController : ViewController, MKMapViewDelegate {
     func getAnnotations(fromLocations: Array<StudentLocation>) -> [MKPointAnnotation] {
         
         var annotations = [MKPointAnnotation]()
-        if let locations = appDelegate.pins {
+        if let locations = DataModel.sharedInstance.pins {
             for location in locations {
                 if let latitude = location.latitude, let longitude = location.longitude, let first = location.firstName, let last = location.lastName, let mediaURL = location.mediaURL {
                     let lat = CLLocationDegrees(latitude)
